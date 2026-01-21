@@ -1,0 +1,12 @@
+{
+  "name": "luck-wheel-app",
+  "version": "1.0.0",
+  "description": "تطبيق عجلة الحظ التفاعلية",
+  "scripts": {
+    "dev": "echo 'تطبيق HTML ثابت - افتح public/index.html في المتصفح'",
+    "start": "echo 'تطبيق جاهز للنشر'"
+  },
+  "keywords": ["عجلة الحظ", "لعبة", "تفاعلية"],
+  "author": "Your Name",
+  "license": "MIT"
+}

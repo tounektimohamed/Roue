@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عجلة الحظ - نمط عيد الميلاد</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+        
+        /* نمط إدخال الجوائز */
+        .setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+            transition: opacity 0.5s ease;
+        }
+        
+        .setup-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .setup-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .setup-title {
+            color: #2575fc;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .setup-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px 0 0 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: #6a11cb;
+            outline: none;
+        }
+        
+        .add-btn {
+            background-color: #6a11cb;
+            color: white;
+            border: none;
+            padding: 0 30px;
+            border-radius: 0 10px 10px 0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .add-btn:hover {
+            background-color: #5a0db3;
+        }
+        
+        .prizes-list {
+            list-style: none;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9ff;
+            border-radius: 10px;
+            border: 2px dashed #6a11cb;
+            margin-bottom: 25px;
+            text-align: right;
+        }
+        
+        .prizes-list li {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: #f0f4ff;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 5px solid #6a11cb;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .prizes-list li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .prize-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .delete-btn {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background-color: #ff3742;
+        }
+        
+        .start-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .start-btn:hover {
+            background-color: #e68900;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .start-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* نمط شاشة العجلة */
+        .wheel-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            z-index: 50;
+        }
+        
+        .wheel-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .wheel-title {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 90vmin;
+            height: 90vmin;
+            max-width: 700px;
+            max-height: 700px;
+            margin: 0 auto;
+        }
+        
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+        
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background-color: #ff9800;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.2rem;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.3s;
+            border: 5px solid white;
+        }
+        
+        .wheel-center:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 80px;
+            z-index: 9;
+        }
+        
+        .pointer i {
+            color: #FFD700;
+            font-size: 80px;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+        }
+        
+        .spin-btn {
+            background-color: #FFD700;
+            color: #333;
+            border: none;
+            padding: 18px 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            margin-top: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .spin-btn:hover {
+            background-color: #ffcc00;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(255, 215, 0, 0.5);
+        }
+        
+        .spin-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .space-btn-hint {
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 15px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .space-btn-hint kbd {
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 0 5px;
+            border: 1px solid #555;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        /* نمط شاشة النتيجة */
+        .result-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            z-index: 60;
+            padding: 20px;
+        }
+        
+        .result-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .result-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            padding: 60px 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            animation: scaleIn 0.8s ease;
+        }
+        
+        .result-title {
+            color: #00b09b;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-prize {
+            font-size: 4.5rem;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin: 40px 0;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        .result-message {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        
+        .result-btn {
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .spin-again-btn {
+            background-color: #ff9800;
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .spin-again-btn:hover {
+            background-color: #e68900;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .new-prizes-btn {
+            background-color: #6a11cb;
+            color: white;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .new-prizes-btn:hover {
+            background-color: #5a0db3;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(106, 17, 203, 0.4);
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+        
+        /* التأثيرات */
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .setup-container, .result-container {
+                padding: 30px 20px;
+            }
+            
+            .setup-title {
+                font-size: 2rem;
+            }
+            
+            .wheel-title {
+                font-size: 2.2rem;
+            }
+            
+            .result-title {
+                font-size: 2.2rem;
+            }
+            
+            .result-prize {
+                font-size: 3rem;
+                margin: 20px 0;
+            }
+            
+            .result-message {
+                font-size: 1.5rem;
+            }
+            
+            .result-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .result-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .back-btn {
+                top: 20px;
+                right: 20px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة إعداد الجوائز -->
+    <div class="setup-screen" id="setupScreen">
+        <div class="setup-container">
+            <h1 class="setup-title"><i class="fas fa-gift"></i> عجلة الحظ التفاعلية</h1>
+            <p class="setup-subtitle">أدخل الجوائز التي تريد وضعها في عجلة الحظ (يجب إدخال جائزتين على الأقل)</p>
+            
+            <div class="input-group">
+                <input type="text" id="prizeInput" placeholder="أدخل جائزة جديدة (مثال: هاتف ذكي)">
+                <button class="add-btn" id="addPrizeBtn">إضافة</button>
+            </div>
+            
+            <h3 style="color: #6a11cb; margin-bottom: 10px; text-align: right;">الجوائز المضافة:</h3>
+            <ul class="prizes-list" id="prizesList">
+                <!-- الجوائز ستظهر هنا -->
+            </ul>
+            
+            <button class="start-btn" id="startBtn" disabled>
+                <i class="fas fa-play-circle"></i> بدء تدوير العجلة
+            </button>
+            
+            <div class="space-btn-hint" style="margin-top: 20px;">
+                <p>يمكنك استخدام زر <kbd>المسافة</kbd> لتشغيل العجلة عندما تكون في شاشة العجلة</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- شاشة العجلة -->
+    <div class="wheel-screen" id="wheelScreen">
+        <button class="back-btn" id="backToSetupBtn">
+            <i class="fas fa-arrow-right"></i> العودة للجوايز
+        </button>
+        
+        <h1 class="wheel-title">عجلة الحظ</h1>
+        
+        <div class="wheel-container">
+            <div class="pointer">
+                <i class="fas fa-caret-down"></i>
+            </div>
+            <canvas id="wheelCanvas"></canvas>
+            <div class="wheel-center" id="spinCenterButton">
+                <i class="fas fa-redo"></i>
+            </div>
+        </div>
+        
+        <button class="spin-btn" id="spinBtn">
+            <i class="fas fa-play-circle"></i> تدوير العجلة
+        </button>
+        
+        <div class="space-btn-hint">
+            <p>اضغط على زر <kbd>المسافة</kbd> أو انقر على الزر أعلاه لتشغيل العجلة</p>
+        </div>
+    </div>
+    
+    <!-- شاشة النتيجة -->
+    <div class="result-screen" id="resultScreen">
+        <div class="confetti" id="confettiContainer"></div>
+        <div class="result-container">
+            <h1 class="result-title">مبروك! لقد فزت بـ</h1>
+            <div class="result-prize" id="resultPrize"></div>
+            <p class="result-message">تهانينا على فوزك الرائع!</p>
+            
+            <div class="result-actions">
+                <button class="result-btn spin-again-btn" id="spinAgainBtn">
+                    <i class="fas fa-redo"></i> تدوير مرة أخرى
+                </button>
+                <button class="result-btn new-prizes-btn" id="newPrizesBtn">
+                    <i class="fas fa-gift"></i> تغيير الجوائز
+                </button>
+            </div>
+            
+            <div class="space-btn-hint" style="margin-top: 30px; color: #666;">
+                <p>يمكنك استخدام زر <kbd>المسافة</kbd> للعودة وتدوير مرة أخرى</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات التطبيق
+        let prizes = [];
+        let colors = [
+            '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
+            '#536DFE', '#448AFF', '#40C4FF', '#18FFFF',
+            '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41',
+            '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+        ];
+        let isSpinning = false;
+        let currentRotation = 0;
+        let wheelCanvas, wheelCtx;
+        let winningPrizeIndex = -1;
+
+        // عناصر الشاشات
+        const setupScreen = document.getElementById('setupScreen');
+        const wheelScreen = document.getElementById('wheelScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const resultPrize = document.getElementById('resultPrize');
+        const confettiContainer = document.getElementById('confettiContainer');
+
+        // تحميل الجوائز من localStorage عند بدء التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            wheelCanvas = document.getElementById('wheelCanvas');
+            wheelCtx = wheelCanvas.getContext('2d');
+            
+            // تحميل الجوائز من localStorage
+            loadPrizesFromStorage();
+            
+            // إعداد حجم canvas
+            resizeWheelCanvas();
+            window.addEventListener('resize', resizeWheelCanvas);
+            
+            // إضافة مستمعي الأحداث
+            document.getElementById('addPrizeBtn').addEventListener('click', addPrize);
+            document.getElementById('prizeInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addPrize();
+            });
+            
+            document.getElementById('startBtn').addEventListener('click', startWheelScreen);
+            document.getElementById('backToSetupBtn').addEventListener('click', backToSetup);
+            document.getElementById('spinBtn').addEventListener('click', spinWheel);
+            document.getElementById('spinCenterButton').addEventListener('click', spinWheel);
+            document.getElementById('spinAgainBtn').addEventListener('click', spinAgain);
+            document.getElementById('newPrizesBtn').addEventListener('click', newPrizes);
+            
+            // إضافة مستمع لزر المساحة
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // رسم العجلة أول مرة
+            drawWheel();
+        });
+
+        // معالجة الضغط على المفاتيح
+        function handleKeyPress(event) {
+            // زر المساحة (Space) - الرمز 32
+            if (event.keyCode === 32 || event.key === ' ') {
+                event.preventDefault(); // منع السلوك الافتراضي للمسافة (التمرير للأسفل)
+                
+                // إذا كانت شاشة العجلة نشطة ولم تكن العجلة في حالة دوران
+                if (wheelScreen.classList.contains('active') && !isSpinning) {
+                    spinWheel();
+                }
+                // إذا كانت شاشة النتيجة نشطة
+                else if (resultScreen.classList.contains('active')) {
+                    spinAgain();
+                }
+            }
+            
+            // زر Escape للعودة
+            if (event.keyCode === 27) { // Escape key
+                if (wheelScreen.classList.contains('active')) {
+                    backToSetup();
+                }
+            }
+        }
+
+        // تحميل الجوائز من localStorage
+        function loadPrizesFromStorage() {
+            const savedPrizes = localStorage.getItem('luckWheelPrizes');
+            if (savedPrizes) {
+                prizes = JSON.parse(savedPrizes);
+                updatePrizesList();
+            } else {
+                // إذا لم توجد جوائز محفوظة، نضيف بعض الجوائز الافتراضية
+                prizes = [
+                    { text: "هاتف ذكي", color: colors[0] },
+                    { text: "حواسيب محمولة", color: colors[1] },
+                    { text: "سماعات لاسلكية", color: colors[2] },
+                    { text: "ساعة ذكية", color: colors[3] },
+                    { text: "قسيمة تسوق 100$", color: colors[4] },
+                    { text: "عشاء مجاني", color: colors[5] },
+                    { text: "إجازة نهاية أسبوع", color: colors[6] },
+                    { text: "تلفزيون ذكي", color: colors[7] }
+                ];
+                savePrizesToStorage();
+                updatePrizesList();
+            }
+        }
+
+        // حفظ الجوائز في localStorage
+        function savePrizesToStorage() {
+            localStorage.setItem('luckWheelPrizes', JSON.stringify(prizes));
+        }
+
+        // إضافة جائزة جديدة
+        function addPrize() {
+            const prizeInput = document.getElementById('prizeInput');
+            const prizeText = prizeInput.value.trim();
+            
+            if (!prizeText) {
+                alert("الرجاء إدخال نص للجائزة");
+                return;
+            }
+            
+            // استخدام لون عشوائي للجائزة الجديدة
+            const colorIndex = prizes.length % colors.length;
+            const newPrize = {
+                text: prizeText,
+                color: colors[colorIndex]
+            };
+            
+            prizes.push(newPrize);
+            savePrizesToStorage();
+            updatePrizesList();
+            drawWheel();
+            
+            // مسح حقل الإدخال
+            prizeInput.value = '';
+            prizeInput.focus();
+        }
+
+        // تحديث قائمة الجوائز المعروضة
+        function updatePrizesList() {
+            const prizesList = document.getElementById('prizesList');
+            const startBtn = document.getElementById('startBtn');
+            
+            prizesList.innerHTML = '';
+            
+            if (prizes.length === 0) {
+                prizesList.innerHTML = '<li style="text-align: center; color: #999;">لم يتم إضافة أي جوائز بعد</li>';
+                startBtn.disabled = true;
+                return;
+            }
+            
+            prizes.forEach((prize, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div>
+                        <span class="prize-color" style="background-color: ${prize.color};"></span>
+                        ${prize.text}
+                    </div>
+                    <button class="delete-btn" onclick="deletePrize(${index})">حذف</button>
+                `;
+                prizesList.appendChild(li);
+            });
+            
+            // تحديث حالة زر البدء
+            startBtn.disabled = prizes.length < 2;
+        }
+
+        // حذف جائزة
+        function deletePrize(index) {
+            if (confirm(`هل أنت متأكد من حذف الجائزة "${prizes[index].text}"؟`)) {
+                prizes.splice(index, 1);
+                savePrizesToStorage();
+                updatePrizesList();
+                drawWheel();
+            }
+        }
+
+        // الانتقال إلى شاشة العجلة
+        function startWheelScreen() {
+            if (prizes.length < 2) {
+                alert("يجب إضافة جائزتين على الأقل لتشغيل العجلة");
+                return;
+            }
+            
+            setupScreen.classList.add('hidden');
+            wheelScreen.classList.add('active');
+            drawWheel();
+        }
+
+        // العودة إلى شاشة الإعداد
+        function backToSetup() {
+            wheelScreen.classList.remove('active');
+            setupScreen.classList.remove('hidden');
+        }
+
+        // ضبط حجم عجلة الحظ
+        function resizeWheelCanvas() {
+            const container = document.querySelector('.wheel-container');
+            const size = Math.min(container.clientWidth, container.clientHeight);
+            
+            wheelCanvas.width = size;
+            wheelCanvas.height = size;
+            
+            drawWheel();
+        }
+
+        // رسم عجلة الحظ - بدون أسماء
+        function drawWheel() {
+            if (prizes.length === 0) return;
+            
+            const centerX = wheelCanvas.width / 2;
+            const centerY = wheelCanvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 30;
+            
+            // مسح canvas
+            wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+            
+            // حساب زاوية كل قطعة
+            const angleStep = (2 * Math.PI) / prizes.length;
+            
+            // رسم كل قطعة
+            for (let i = 0; i < prizes.length; i++) {
+                const startAngle = i * angleStep + currentRotation;
+                const endAngle = (i + 1) * angleStep + currentRotation;
+                
+                // رسم القطعة
+                wheelCtx.beginPath();
+                wheelCtx.moveTo(centerX, centerY);
+                wheelCtx.arc(centerX, centerY, radius, startAngle, endAngle);
+                wheelCtx.closePath();
+                
+                // تعبئة القطعة
+                wheelCtx.fillStyle = prizes[i].color;
+                wheelCtx.fill();
+                
+                // إضافة حدود
+                wheelCtx.strokeStyle = '#fff';
+                wheelCtx.lineWidth = 3;
+                wheelCtx.stroke();
+                
+                // رسم خطوط فاصلة بين القطع
+                wheelCtx.beginPath();
+                wheelCtx.moveTo(centerX, centerY);
+                wheelCtx.lineTo(
+                    centerX + Math.cos(startAngle) * radius,
+                    centerY + Math.sin(startAngle) * radius
+                );
+                wheelCtx.strokeStyle = '#fff';
+                wheelCtx.lineWidth = 2;
+                wheelCtx.stroke();
+                
+                // **تم إزالة كود كتابة النص هنا**
+            }
+            
+            // رسم الحد الخارجي للعجلة
+            wheelCtx.beginPath();
+            wheelCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            wheelCtx.strokeStyle = '#fff';
+            wheelCtx.lineWidth = 5;
+            wheelCtx.stroke();
+            
+            // رسم مركز العجلة
+            wheelCtx.beginPath();
+            wheelCtx.arc(centerX, centerY, 40, 0, 2 * Math.PI);
+            wheelCtx.fillStyle = '#ff9800';
+            wheelCtx.fill();
+            wheelCtx.strokeStyle = '#fff';
+            wheelCtx.lineWidth = 5;
+            wheelCtx.stroke();
+            
+            // إضافة نص "ابدأ" في المركز
+            wheelCtx.fillStyle = '#fff';
+            wheelCtx.font = 'bold 18px Arial';
+            wheelCtx.textAlign = 'center';
+            wheelCtx.textBaseline = 'middle';
+            wheelCtx.fillText('ابدأ', centerX, centerY);
+            
+            // إضافة تأثيرات زخرفية على العجلة
+            addWheelDecorations(centerX, centerY, radius);
+        }
+
+        // إضافة زخارف على العجلة
+        function addWheelDecorations(centerX, centerY, radius) {
+            // إضافة نقاط زخرفية على محيط العجلة
+            const numDots = 24;
+            const dotRadius = 5;
+            
+            for (let i = 0; i < numDots; i++) {
+                const angle = (i / numDots) * 2 * Math.PI;
+                const dotX = centerX + Math.cos(angle) * (radius + 10);
+                const dotY = centerY + Math.sin(angle) * (radius + 10);
+                
+                wheelCtx.beginPath();
+                wheelCtx.arc(dotX, dotY, dotRadius, 0, 2 * Math.PI);
+                wheelCtx.fillStyle = i % 2 === 0 ? '#FFD700' : '#FFFFFF';
+                wheelCtx.fill();
+            }
+            
+            // إضافة خطوط زخرفية داخل العجلة
+            const innerRadius = radius * 0.7;
+            const numLines = 12;
+            
+            for (let i = 0; i < numLines; i++) {
+                const angle = (i / numLines) * 2 * Math.PI;
+                wheelCtx.beginPath();
+                wheelCtx.moveTo(
+                    centerX + Math.cos(angle) * innerRadius,
+                    centerY + Math.sin(angle) * innerRadius
+                );
+                wheelCtx.lineTo(
+                    centerX + Math.cos(angle) * (radius - 10),
+                    centerY + Math.sin(angle) * (radius - 10)
+                );
+                wheelCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                wheelCtx.lineWidth = 1;
+                wheelCtx.stroke();
+            }
+        }
+
+        // تدوير العجلة
+        function spinWheel() {
+            if (isSpinning || prizes.length < 2) return;
+            
+            isSpinning = true;
+            const spinBtn = document.getElementById('spinBtn');
+            const spinCenterBtn = document.getElementById('spinCenterButton');
+            
+            spinBtn.disabled = true;
+            spinCenterBtn.style.pointerEvents = 'none';
+            
+            // حساب عدد الدورات (بين 5 و10 دورات كاملة)
+            const spins = 5 + Math.random() * 5;
+            const totalRotation = spins * 2 * Math.PI;
+            
+            // اختيار جائزة عشوائية
+            winningPrizeIndex = Math.floor(Math.random() * prizes.length);
+            const angleStep = (2 * Math.PI) / prizes.length;
+            
+            // حساب الزاوية النهائية بحيث تكون المؤشر يشير إلى الجائزة الفائزة
+            // نريد أن ينتهي المؤشر في منتصف القطعة الفائزة
+            const targetRotation = currentRotation + totalRotation + (winningPrizeIndex * angleStep + angleStep / 2);
+            
+            // تدوير العجلة
+            const startTime = Date.now();
+            const duration = 5000; // 5 ثواني
+            
+            function animateWheel() {
+                const now = Date.now();
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // استخدام دالة easeOutCubic للتدوير ببطء في النهاية
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                currentRotation = easeProgress * targetRotation;
+                drawWheel();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateWheel);
+                } else {
+                    // انتهاء التدوير
+                    isSpinning = false;
+                    
+                    // التأثير البصري عند التوقف
+                    addStopEffect();
+                    
+                    // الانتقال إلى شاشة النتيجة بعد تأخير بسيط
+                    setTimeout(() => {
+                        showResult();
+                    }, 1500);
+                }
+            }
+            
+            requestAnimationFrame(animateWheel);
+        }
+
+        // إضافة تأثير عند توقف العجلة
+        function addStopEffect() {
+            const centerX = wheelCanvas.width / 2;
+            const centerY = wheelCanvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 30;
+            const angleStep = (2 * Math.PI) / prizes.length;
+            
+            // تسليط الضوء على القطعة الفائزة
+            const startAngle = winningPrizeIndex * angleStep + currentRotation;
+            const endAngle = (winningPrizeIndex + 1) * angleStep + currentRotation;
+            
+            wheelCtx.save();
+            
+            // رسم هالة حول القطعة الفائزة
+            const gradient = wheelCtx.createRadialGradient(
+                centerX, centerY, radius * 0.8,
+                centerX, centerY, radius * 1.2
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            gradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.3)');
+            gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            
+            wheelCtx.beginPath();
+            wheelCtx.moveTo(centerX, centerY);
+            wheelCtx.arc(centerX, centerY, radius * 1.1, startAngle, endAngle);
+            wheelCtx.closePath();
+            wheelCtx.fillStyle = gradient;
+            wheelCtx.fill();
+            
+            wheelCtx.restore();
+        }
+
+        // عرض نتيجة الجائزة
+        function showResult() {
+            if (winningPrizeIndex < 0 || winningPrizeIndex >= prizes.length) {
+                console.error("فهرس الجائزة الفائزة غير صالح:", winningPrizeIndex);
+                winningPrizeIndex = 0; // افتراض جائزة أولى كبديل
+            }
+            
+            const winningPrize = prizes[winningPrizeIndex];
+            
+            // إضافة تأثير الألوان
+            document.body.style.background = "linear-gradient(135deg, #00b09b 0%, #96c93d 100%)";
+            
+            // تعيين الجائزة الفائزة
+            resultPrize.innerHTML = `
+                <span style="color: ${winningPrize.color};">${winningPrize.text}</span>
+            `;
+            
+            // إنشاء تأثير الكونفيتي
+            createConfetti();
+            
+            // الانتقال إلى شاشة النتيجة
+            wheelScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+        }
+
+        // تدوير مرة أخرى
+        function spinAgain() {
+            // العودة إلى شاشة العجلة
+            resultScreen.classList.remove('active');
+            wheelScreen.classList.add('active');
+            
+            // إعادة تعيين خلفية الصفحة
+            document.body.style.background = "linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)";
+            
+            // إعادة تمكين أزرار التدوير
+            const spinBtn = document.getElementById('spinBtn');
+            const spinCenterBtn = document.getElementById('spinCenterButton');
+            
+            spinBtn.disabled = false;
+            spinCenterBtn.style.pointerEvents = 'auto';
+            
+            // إعادة تعيين المتغيرات
+            winningPrizeIndex = -1;
+        }
+
+        // تغيير الجوائز
+        function newPrizes() {
+            // العودة إلى شاشة الإعداد
+            resultScreen.classList.remove('active');
+            setupScreen.classList.remove('hidden');
+            
+            // إعادة تعيين خلفية الصفحة
+            document.body.style.background = "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)";
+            
+            // إعادة تعيين المتغيرات
+            winningPrizeIndex = -1;
+        }
+
+        // إنشاء تأثير الكونفيتي
+        function createConfetti() {
+            confettiContainer.innerHTML = '';
+            const confettiCount = 150;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = `${Math.random() * 20 + 5}px`;
+                confetti.style.height = `${Math.random() * 20 + 5}px`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = '-50px';
+                confetti.style.opacity = Math.random() * 0.5 + 0.5;
+                
+                // إضافة انيميشن
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear forwards`;
+                confetti.style.animationDelay = `${Math.random() * 1}s`;
+                
+                confettiContainer.appendChild(confetti);
+                
+                // إزالة الكونفيتي بعد انتهاء الانيميشن
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.remove();
+                    }
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
