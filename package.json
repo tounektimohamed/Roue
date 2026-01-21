@@ -1,12 +1,21 @@
 {
-  "name": "luck-wheel-app",
+  "name": "luck-wheel-vercel",
   "version": "1.0.0",
-  "description": "تطبيق عجلة الحظ التفاعلية",
+  "description": "تطبيق عجلة الحظ التفاعلية - منشور على Vercel",
+  "main": "public/index.html",
   "scripts": {
-    "dev": "echo 'تطبيق HTML ثابت - افتح public/index.html في المتصفح'",
-    "start": "echo 'تطبيق جاهز للنشر'"
+    "dev": "echo 'افتح public/index.html في متصفحك'",
+    "test": "echo 'لا توجد اختبارات حالياً'",
+    "deploy": "vercel --prod"
   },
-  "keywords": ["عجلة الحظ", "لعبة", "تفاعلية"],
-  "author": "Your Name",
-  "license": "MIT"
+  "keywords": [
+    "عجلة الحظ",
+    "لعبة",
+    "تفاعلية",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
 }
